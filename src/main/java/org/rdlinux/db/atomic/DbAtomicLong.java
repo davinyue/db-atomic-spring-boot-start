@@ -16,19 +16,24 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
         super(name, ezMapper, transactionManager);
     }
 
-    private void addValue(Long addValue) {
+    @Override
+    public void add(Long addValue) {
         Assert.notNull(addValue, "addValue must not be null");
-        EntityTable table = EntityTable.of(DbAtomicTable.class);
-        EzUpdate update = EzUpdate.update(table)
-                .set()
-                .setField(DbAtomicTable.Filed.longValue, Formula.builder(table).withField(DbAtomicTable.Filed.longValue)
-                        .addValue(addValue).done().build())
-                .done()
-                .where()
-                .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                .done()
-                .build();
-        this.ezMapper.ezUpdate(update);
+        this.doWithMandatoryTransaction(() -> {
+            this.lock();
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzUpdate update = EzUpdate.update(table)
+                    .set()
+                    .setField(DbAtomicTable.Filed.longValue, Formula.builder(table)
+                            .withField(DbAtomicTable.Filed.longValue)
+                            .addValue(addValue).done().build())
+                    .done()
+                    .where()
+                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
+                    .done()
+                    .build();
+            this.ezMapper.ezUpdate(update);
+        });
     }
 
 
@@ -119,19 +124,13 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
     @Override
     public Long getAndAdd(Long addValue) {
         Long ret = this.get();
-        this.doWithMandatoryTransaction(() -> {
-            this.lock();
-            this.addValue(addValue);
-        });
+        this.add(addValue);
         return ret;
     }
 
     @Override
     public Long addAndGet(Long addValue) {
-        this.doWithMandatoryTransaction(() -> {
-            this.lock();
-            this.addValue(addValue);
-        });
+        this.add(addValue);
         return this.get();
     }
 }

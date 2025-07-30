@@ -32,6 +32,11 @@ public interface DbAtomic<Vt> {
     boolean compareAndDelete(Vt expectedValue);
 
     /**
+     * 增加指定值
+     */
+    void add(Vt addedValue);
+
+    /**
      * 获取老值并增加指定值
      */
     Vt getAndAdd(Vt addValue);

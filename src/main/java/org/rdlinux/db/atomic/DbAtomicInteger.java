@@ -19,19 +19,24 @@ public class DbAtomicInteger extends AbstractDbAtomic<Integer> {
         super(name, ezMapper, transactionManager);
     }
 
-    private void addValue(Integer addValue) {
+    @Override
+    public void add(Integer addValue) {
         Assert.notNull(addValue, "addValue must not be null");
-        EntityTable table = EntityTable.of(DbAtomicTable.class);
-        EzUpdate update = EzUpdate.update(table)
-                .set()
-                .setField(DbAtomicTable.Filed.intValue, Formula.builder(table).withField(DbAtomicTable.Filed.intValue)
-                        .addValue(addValue).done().build())
-                .done()
-                .where()
-                .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                .done()
-                .build();
-        this.ezMapper.ezUpdate(update);
+        this.doWithMandatoryTransaction(() -> {
+            this.lock();
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzUpdate update = EzUpdate.update(table)
+                    .set()
+                    .setField(DbAtomicTable.Filed.intValue, Formula.builder(table)
+                            .withField(DbAtomicTable.Filed.intValue)
+                            .addValue(addValue).done().build())
+                    .done()
+                    .where()
+                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
+                    .done()
+                    .build();
+            this.ezMapper.ezUpdate(update);
+        });
     }
 
 
@@ -122,19 +127,13 @@ public class DbAtomicInteger extends AbstractDbAtomic<Integer> {
     @Override
     public Integer getAndAdd(Integer addValue) {
         Integer ret = this.get();
-        this.doWithMandatoryTransaction(() -> {
-            this.lock();
-            this.addValue(addValue);
-        });
+        this.add(addValue);
         return ret;
     }
 
     @Override
     public Integer addAndGet(Integer addValue) {
-        this.doWithMandatoryTransaction(() -> {
-            this.lock();
-            this.addValue(addValue);
-        });
+        this.add(addValue);
         return this.get();
     }
 }

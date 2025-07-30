@@ -163,6 +163,7 @@ public void atomicDoubleExample() {
 | 方法                              | 说明     | 是否需要事务 |
 |---------------------------------|--------|--------|
 | `get()`                         | 获取当前值  | ❌      |
+| `add(value)`                    | 增加值    | ✅      |
 | `set(value)`                    | 设置值    | ✅      |
 | `compareAndSet(expect, update)` | CAS 更新 | ✅      |
 | `compareAndDelete(expect)`      | CAS 删除 | ✅      |
