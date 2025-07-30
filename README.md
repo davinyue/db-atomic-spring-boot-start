@@ -165,7 +165,6 @@ public void atomicDoubleExample() {
 | `get()`                         | 获取当前值  | ❌      |
 | `set(value)`                    | 设置值    | ✅      |
 | `compareAndSet(expect, update)` | CAS 更新 | ✅      |
-| `delete()`                      | 删除记录   | ✅      |
 | `compareAndDelete(expect)`      | CAS 删除 | ✅      |
 | `addAndGet(delta)`              | 先加后取   | ✅      |
 | `getAndAdd(delta)`              | 先取后加   | ✅      |
