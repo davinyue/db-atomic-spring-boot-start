@@ -22,15 +22,15 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
         this.doWithMandatoryTransaction(() -> {
             this.lock();
             EntityTable table = EntityTable.of(DbAtomicTable.class);
+            Formula lvFm = Formula.build(f ->
+                    f.with(table.field(DbAtomicTable.Filed.longValue))
+                            .add(addValue));
             EzUpdate update = EzUpdate.update(table)
-                    .set()
-                    .setField(DbAtomicTable.Filed.longValue, Formula.builder(table)
-                            .withField(DbAtomicTable.Filed.longValue)
-                            .addValue(addValue).done().build())
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .done()
+                    .set(s ->
+                            s.add(table.field(DbAtomicTable.Filed.longValue).set(lvFm)))
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                    )
                     .build();
             this.ezMapper.ezUpdate(update);
         });
@@ -39,14 +39,13 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
 
     @Override
     public Long get() {
+        EntityTable table = EntityTable.of(DbAtomicTable.class);
         EzQuery<Long> query = EzQuery.builder(Long.class)
-                .from(EntityTable.of(DbAtomicTable.class))
-                .select()
-                .addField(DbAtomicTable.Filed.longValue)
-                .done()
-                .where()
-                .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                .done()
+                .from(table)
+                .select(s -> s.add(table.field(DbAtomicTable.Filed.longValue)))
+                .where(w ->
+                        w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                )
                 .build();
         Long ret = this.ezMapper.queryOne(query);
         if (ret == null) {
@@ -60,13 +59,13 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
         Assert.notNull(newValue, "newValue must not be null");
         this.doWithMandatoryTransaction(() -> {
             this.lock();
-            EzUpdate update = EzUpdate.update(EntityTable.of(DbAtomicTable.class))
-                    .set()
-                    .setField(DbAtomicTable.Filed.longValue, newValue)
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .done()
+
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzUpdate update = EzUpdate.update(table)
+                    .set(s -> s.add(table.field(DbAtomicTable.Filed.longValue).set(newValue)))
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                    )
                     .build();
             this.ezMapper.ezUpdate(update);
         });
@@ -90,14 +89,13 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
         AtomicBoolean ret = new AtomicBoolean(Boolean.FALSE);
         this.doWithMandatoryTransaction(() -> {
             this.lock();
-            EzUpdate update = EzUpdate.update(EntityTable.of(DbAtomicTable.class))
-                    .set()
-                    .setField(DbAtomicTable.Filed.longValue, newValue)
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .addFieldCondition(DbAtomicTable.Filed.longValue, expectedValue)
-                    .done()
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzUpdate update = EzUpdate.update(table)
+                    .set(s -> s.add(table.field(DbAtomicTable.Filed.longValue).set(newValue)))
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                                    .add(table.field(DbAtomicTable.Filed.longValue).eq(expectedValue))
+                    )
                     .build();
             ret.set(this.ezMapper.ezUpdate(update) > 0);
         });
@@ -109,11 +107,12 @@ public class DbAtomicLong extends AbstractDbAtomic<Long> {
         Assert.notNull(expectedValue, "expectedValue must not be null");
         AtomicBoolean ret = new AtomicBoolean(Boolean.FALSE);
         this.doWithMandatoryTransaction(() -> {
-            EzDelete delete = EzDelete.delete(EntityTable.of(DbAtomicTable.class))
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .addFieldCondition(DbAtomicTable.Filed.longValue, expectedValue)
-                    .done()
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzDelete delete = EzDelete.delete(table)
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                                    .add(table.field(DbAtomicTable.Filed.longValue).eq(expectedValue))
+                    )
                     .build();
             ret.set(this.ezMapper.ezDelete(delete) > 0);
         });

@@ -35,7 +35,7 @@
 
     <groupId>org.rdlinux</groupId>
     <artifactId>db-atomic-spring-boot-start</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <packaging>jar</packaging>
     <name>db-atomic-spring-boot-start</name>
     <description>db-atomic-spring-boot-start</description>
@@ -53,8 +53,8 @@
     <dependencies>
         <dependency>
             <groupId>org.rdlinux</groupId>
-            <artifactId>ez-mybatis-spring-boot-start</artifactId>
-            <version>0.9.8.RS</version>
+            <artifactId>ez-mybatis-spring-boot-starter</artifactId>
+            <version>1.0.4.RS</version>
         </dependency>
     </dependencies>
     <build>

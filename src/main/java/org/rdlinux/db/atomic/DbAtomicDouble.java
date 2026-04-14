@@ -22,15 +22,15 @@ public class DbAtomicDouble extends AbstractDbAtomic<Double> {
         this.doWithMandatoryTransaction(() -> {
             this.lock();
             EntityTable table = EntityTable.of(DbAtomicTable.class);
+            Formula dvFm = Formula.build(f ->
+                    f.with(table.field(DbAtomicTable.Filed.doubleValue))
+                            .add(addValue));
             EzUpdate update = EzUpdate.update(table)
-                    .set()
-                    .setField(DbAtomicTable.Filed.doubleValue,
-                            Formula.builder(table).withField(DbAtomicTable.Filed.doubleValue)
-                                    .addValue(addValue).done().build())
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .done()
+                    .set(s ->
+                            s.add(table.field(DbAtomicTable.Filed.doubleValue).set(dvFm)))
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                    )
                     .build();
             this.ezMapper.ezUpdate(update);
         });
@@ -39,14 +39,13 @@ public class DbAtomicDouble extends AbstractDbAtomic<Double> {
 
     @Override
     public Double get() {
+        EntityTable table = EntityTable.of(DbAtomicTable.class);
         EzQuery<Double> query = EzQuery.builder(Double.class)
-                .from(EntityTable.of(DbAtomicTable.class))
-                .select()
-                .addField(DbAtomicTable.Filed.doubleValue)
-                .done()
-                .where()
-                .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                .done()
+                .from(table)
+                .select(s -> s.add(table.field(DbAtomicTable.Filed.doubleValue)))
+                .where(w ->
+                        w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                )
                 .build();
         Double ret = this.ezMapper.queryOne(query);
         if (ret == null) {
@@ -60,13 +59,12 @@ public class DbAtomicDouble extends AbstractDbAtomic<Double> {
         Assert.notNull(newValue, "newValue must not be null");
         this.doWithMandatoryTransaction(() -> {
             this.lock();
-            EzUpdate update = EzUpdate.update(EntityTable.of(DbAtomicTable.class))
-                    .set()
-                    .setField(DbAtomicTable.Filed.doubleValue, newValue)
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .done()
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzUpdate update = EzUpdate.update(table)
+                    .set(s -> s.add(table.field(DbAtomicTable.Filed.doubleValue).set(newValue)))
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                    )
                     .build();
             this.ezMapper.ezUpdate(update);
         });
@@ -90,14 +88,11 @@ public class DbAtomicDouble extends AbstractDbAtomic<Double> {
         AtomicBoolean ret = new AtomicBoolean(Boolean.FALSE);
         this.doWithMandatoryTransaction(() -> {
             this.lock();
-            EzUpdate update = EzUpdate.update(EntityTable.of(DbAtomicTable.class))
-                    .set()
-                    .setField(DbAtomicTable.Filed.doubleValue, newValue)
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .addFieldCondition(DbAtomicTable.Filed.doubleValue, expectedValue)
-                    .done()
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzUpdate update = EzUpdate.update(table)
+                    .set(s -> s.add(table.field(DbAtomicTable.Filed.doubleValue).set(newValue)))
+                    .where(w -> w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                            .add(table.field(DbAtomicTable.Filed.doubleValue).eq(expectedValue)))
                     .build();
             ret.set(this.ezMapper.ezUpdate(update) > 0);
         });
@@ -109,11 +104,12 @@ public class DbAtomicDouble extends AbstractDbAtomic<Double> {
         Assert.notNull(expectedValue, "expectedValue must not be null");
         AtomicBoolean ret = new AtomicBoolean(Boolean.FALSE);
         this.doWithMandatoryTransaction(() -> {
-            EzDelete delete = EzDelete.delete(EntityTable.of(DbAtomicTable.class))
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .addFieldCondition(DbAtomicTable.Filed.doubleValue, expectedValue)
-                    .done()
+            EntityTable table = EntityTable.of(DbAtomicTable.class);
+            EzDelete delete = EzDelete.delete(table)
+                    .where(w ->
+                            w.add(table.field(DbAtomicTable.Filed.id).eq(this.name))
+                                    .add(table.field(DbAtomicTable.Filed.doubleValue).eq(expectedValue))
+                    )
                     .build();
             ret.set(this.ezMapper.ezDelete(delete) > 0);
         });

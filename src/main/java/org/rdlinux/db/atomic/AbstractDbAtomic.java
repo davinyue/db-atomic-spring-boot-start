@@ -86,12 +86,8 @@ public abstract class AbstractDbAtomic<Vt> implements DbAtomic<Vt> {
         boolean isExist = false;
         while (!isExist) {
             EzUpdate update = EzUpdate.update(table)
-                    .set()
-                    .setField(DbAtomicTable.Filed.updateTime, new Date())
-                    .done()
-                    .where()
-                    .addFieldCondition(DbAtomicTable.Filed.id, this.name)
-                    .done()
+                    .set(s -> s.add(table.field(DbAtomicTable.Filed.updateTime).set(new Date())))
+                    .where(w -> w.add(table.field(DbAtomicTable.Filed.id).eq(this.name)))
                     .build();
             isExist = this.ezMapper.ezUpdate(update) > 0;
             if (!isExist) {
