@@ -2,9 +2,11 @@ package org.rdlinux.db.atomic.spring.boot.start;
 
 import org.mybatis.spring.boot.autoconfigure.MybatisProperties;
 import org.rdlinux.db.atomic.DbAtomicClient;
+import org.rdlinux.db.atomic.DbAtomicTable;
 import org.rdlinux.ezmybatis.constant.DbType;
 import org.rdlinux.ezmybatis.core.EzMybatisContent;
 import org.rdlinux.ezmybatis.core.mapper.EzMapper;
+import org.rdlinux.ezmybatis.core.sqlstruct.table.EntityTable;
 import org.rdlinux.ezmybatis.spring.boot.start.EzMybatisAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -48,6 +50,10 @@ public class DbAtomicAutoConfig {
         InputStream inputStream = this.getClass().getClassLoader()
                 .getResourceAsStream("sql/" + dbType.name() + ".sql");
         if (inputStream == null) {
+            return;
+        }
+        //表存在, 不继续执行建表语句
+        if (this.ezMapper.tableExists(EntityTable.of(DbAtomicTable.class))) {
             return;
         }
         try (Connection connection = this.dataSource.getConnection();
